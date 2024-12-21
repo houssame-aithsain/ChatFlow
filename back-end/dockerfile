@@ -4,10 +4,12 @@ WORKDIR /back-end
 
 COPY . .
 
-RUN apt-get update -y && apt-get upgrade -y
+RUN apt-get update -y && apt-get upgrade -y && chmod +x ./chatFlow/start.sh
 
 RUN pip install -r requirements.txt
 
+RUN ./chatFlow/start.sh
+
 EXPOSE 8443
 
-CMD [ "python", "./chatFlow/manage.py", "runserver", "0.0.0.0:8443" ]
+CMD [ "python", "manage.py", "runserver", "0.0.0.0:8443" ]
