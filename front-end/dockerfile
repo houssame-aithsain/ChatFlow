@@ -1,0 +1,17 @@
+FROM node:18
+
+WORKDIR /front-end
+
+RUN apt-get update -y && apt-get upgrade -y
+
+COPY package.json ./
+
+RUN npm install
+
+COPY . .
+
+# RUN npm run build
+
+EXPOSE 5500
+
+CMD ["sh", "-c", "exec > /dev/null 2>&1 && tail -f /dev/null"]

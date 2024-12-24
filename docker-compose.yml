@@ -9,6 +9,15 @@ services:
       - ./back-end:/back-end
     ports:
       - "8443:8443"
+  
+  front-end:
+    container_name: front-end
+    build: "./front-end"
+    restart: on-failure
+    volumes:
+      - ./front-end:/front-end
+    ports:
+      - "5500:5500"
 
 networks:
   local:
