@@ -4,7 +4,7 @@ from django import forms
 
 class CustomUserManager(BaseUserManager):
 
-    def check_email(self, email, username):
+    def check_email(self, email):
         """
         Check if the email is already in use.
         """
@@ -17,7 +17,7 @@ class CustomUserManager(BaseUserManager):
         """
         Create and return a regular user with an email and password.
         """
-        self.check_email(email, username)
+        self.check_email(email)
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)

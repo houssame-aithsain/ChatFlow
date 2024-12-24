@@ -36,3 +36,14 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         user.save()
         return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['post'], url_path='login')
+    def login(self, request):
+        data = request.data
+        try:
+            user = User.objects.get(email=data['email'])
+        except User.DoesNotExist:
+            return Response({"error": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
+        if user.check_password(data['password']):
+            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+        return Response({"error": "Incorrect password"}, status=status.HTTP_401_UNAUTHORIZED)
