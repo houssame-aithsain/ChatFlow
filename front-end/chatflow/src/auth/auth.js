@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
 import { useRef } from 'react';
-import Login from './sign-in/login';
+import Login from './login/login';
+import Register from './register/register'
 
 function Auth() {
 	const containerRef = useRef(null);
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
 	const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+	const [first_name, setFirstName] = useState('');
+	const [last_name, setLastName] = useState('');
+	const [username, setUserName] = useState('');
 
     const handleSignIn = () => {
         setIsRightPanelActive(false);
@@ -28,10 +32,27 @@ function Auth() {
             				<a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
             			</div>
             			<span>or use your email for registration</span>
-            			<input type="text" placeholder="Name" />
-            			<input type="email" placeholder="Email" />
-            			<input type="password" placeholder="Password" />
-            			<button>Sign Up</button>
+            			<input type="text" placeholder="First name"
+							value={first_name}
+							onChange={(e) => setFirstName(e.target.value)}
+						/>
+            			<input type="text" placeholder="Last name"
+							value={last_name}
+							onChange={(e) => setLastName(e.target.value)}
+						/>
+            			<input type="text" placeholder="Username"
+							value={username}
+							onChange={(e) => setUserName(e.target.value)}
+						/>
+            			<input type="email" placeholder="Email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+						/>
+            			<input type="password" placeholder="Password"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+						/>
+            			<button onClick={() => Register(email, password, first_name, last_name, username)}>Sign Up</button>
             		</form>
             	</div>
             	<div className="form-container sign-in-container">
