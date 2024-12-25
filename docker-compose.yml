@@ -17,7 +17,7 @@ services:
     volumes:
       - ./front-end:/front-end
     ports:
-      - "5500:5500"
+      - "3000:3000"
 
 networks:
   local:
