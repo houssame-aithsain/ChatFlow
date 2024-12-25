@@ -23,7 +23,7 @@
         "webpack-dev-server": "^5.1.0"
     },
     "scripts": {
-        "start": "cd chatflow && react-scripts start --host 0.0.0.0",
+        "start": "cd chatflow && npm start",
         "build": "react-scripts build",
         "test": "react-scripts test",
         "eject": "react-scripts eject"
