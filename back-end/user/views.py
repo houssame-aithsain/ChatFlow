@@ -5,6 +5,7 @@ from .models import User
 from rest_framework import status
 import sys
 from django.core import validators
+from django import forms
 
 # Serializer for the User model
 class UserSerializer(serializers.ModelSerializer):
@@ -41,8 +42,9 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request):
         data = request.data
         try:
+            # forms.EmailField.clean(data['email'])
             user = User.objects.get(email=data['email'])
-        except User.DoesNotExist:
+        except:
             return Response({"error": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
         if user.check_password(data['password']):
             return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
