@@ -1,40 +1,19 @@
 import React, { useState } from 'react';
 import { useRef } from 'react';
+import Login from './sign-in/login';
 
-function LoginPage() {
-    const containerRef = useRef(null);
+function Auth() {
+	const containerRef = useRef(null);
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
-    const [email, setEmail] = useState('');
+	const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-
-    const HandleSumition = async (event) => {
-        event.preventDefault();
-        const credentials = {email, password};
-        console.log(credentials);
-        const response = await fetch('http://127.0.0.1:8443/api/users/login/', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(credentials),
-        });
-
-        if (response.ok) {
-            const data = await response.json();
-            console.log('Login successful:', data);
-            // Handle success (e.g., store user data, redirect to another page)
-          } else {
-            const errorData = await response.json();
-            console.error('Login failed:', errorData);
-        }
-    };
-
-    const handleSignUp = () => {
-        setIsRightPanelActive(true);
-    };
 
     const handleSignIn = () => {
         setIsRightPanelActive(false);
+    };
+
+	const handleSignUp = () => {
+        setIsRightPanelActive(true);
     };
 
     return (
@@ -64,10 +43,16 @@ function LoginPage() {
             				<a href="#" className="social"><i className="fab fa-linkedin-in"></i></a>
             			</div>
             			<span>or use your account</span>
-            			<input type="email" placeholder="Email" />
-            			<input type="password" placeholder="Password" />
+            			<input type="email" placeholder="Email"
+							value={email}
+							onChange={(e) => setEmail(e.target.value)}
+						/>
+            			<input type="password" placeholder="Password"
+							value={password}
+							onChange={(e) => setPassword(e.target.value)}
+						/>
             			<a href="#">Forgot your password?</a>
-            			<button>Sign In</button>
+            			<button onClick={() => Login(email, password)}>Sign In</button>
             		</form>
             	</div>
             	<div className="overlay-container">
@@ -89,4 +74,4 @@ function LoginPage() {
     );
 }
 
-export default LoginPage;
+export default Auth;
