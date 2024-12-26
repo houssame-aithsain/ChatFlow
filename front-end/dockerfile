@@ -4,14 +4,8 @@ WORKDIR /front-end
 
 RUN apt-get update -y && apt-get upgrade -y
 
-COPY package.json ./
-
-RUN npm install
-
 COPY . .
-
-# RUN npm run build
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["./start.sh"]
