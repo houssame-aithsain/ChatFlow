@@ -1,11 +1,12 @@
 from rest_framework import serializers, viewsets
 from rest_framework.response import Response
 from rest_framework.decorators import action
-from .models import User
 from rest_framework import status
 import sys
 from django.core import validators
-from django import forms
+from django.contrib.auth import login, logout
+from .models import User
+from django.contrib.auth import login, logout
 
 # Serializer for the User model
 class UserSerializer(serializers.ModelSerializer):
@@ -42,10 +43,30 @@ class UserViewSet(viewsets.ModelViewSet):
     def login(self, request):
         data = request.data
         try:
-            # forms.EmailField.clean(data['email'])
             user = User.objects.get(email=data['email'])
+            if user.check_password(data['password']):
+                if user is not None:
+                    login(request, user)
+                    response = Response(UserSerializer(user).data, status=status.HTTP_200_OK)
+                    response.set_cookie('user', user.get_session_auth_hash())
+                    return response
         except:
             return Response({"error": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
-        if user.check_password(data['password']):
-            return Response(UserSerializer(user).data, status=status.HTTP_200_OK)
         return Response({"error": "Incorrect password"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @action(detail=False, methods=['get'], url_path='logout')
+    def logout(self, request):
+        if request.user.is_authenticated:
+            logout(request)
+            return Response({"message": "bye!"}, status=status.HTTP_200_OK)
+        return Response({"message": "error: 401"}, status=status.HTTP_401_UNAUTHORIZED)
+
+    @action(detail=False, methods=['get'], url_path='access')
+    def access(self, request):
+        for key, value in request.COOKIES.items():
+            print(f"wtffff{key}: {value}", flush=True)
+        print(f"wtf ff request.user: {request.user}", flush=True)
+        cookie = request.COOKIES.get('user')
+        if cookie:
+                return Response({"message": "access granted"}, status=status.HTTP_200_OK)
+        return Response({"message": "access denied"}, status=status.HTTP_401_UNAUTHORIZED)

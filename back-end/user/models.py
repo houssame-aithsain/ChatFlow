@@ -41,6 +41,7 @@ class User(AbstractBaseUser):
     password = models.CharField(max_length=50, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    is_authenticated = models.BooleanField(default=False)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = []
