@@ -2,8 +2,10 @@ import React, { useState } from 'react';
 import { useRef } from 'react';
 import Login from './login/login';
 import Register from './register/register'
+import { useHistory } from 'react-router-dom';
 
 function Auth() {
+	const history = useHistory();
 	const containerRef = useRef(null);
     const [isRightPanelActive, setIsRightPanelActive] = useState(false);
 	const [email, setEmail] = useState('');
@@ -52,7 +54,10 @@ function Auth() {
 							value={password}
 							onChange={(e) => setPassword(e.target.value)}
 						/>
-            			<button onClick={() => Register(email, password, first_name, last_name, username)}>Sign Up</button>
+            			<button onClick={(e) => {
+							e.preventDefault();
+							Register(email, password, first_name, last_name, username);
+						}}>Sign Up</button>
             		</form>
             	</div>
             	<div className="form-container sign-in-container">
@@ -73,7 +78,10 @@ function Auth() {
 							onChange={(e) => setPassword(e.target.value)}
 						/>
             			<a href="#">Forgot your password?</a>
-            			<button onClick={() => Login(email, password)}>Sign In</button>
+            			<button onClick={(e) =>{
+							e.preventDefault();
+							Login(email, password, history);
+						}}>Sign In</button>
             		</form>
             	</div>
             	<div className="overlay-container">

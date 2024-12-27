@@ -7,6 +7,7 @@ async function Register(email, password, first_name, last_name, username) {
     const response = await fetch('http://127.0.0.1:8443/api/users/register/',
         {
             method: 'POST',
+            credentials: "include",
             headers: {
                 'Content-Type': 'application/json',
             },
