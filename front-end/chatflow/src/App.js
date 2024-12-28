@@ -1,9 +1,11 @@
 import './App.css';
 import Auth from './auth/auth';
-import Home from './home/home';
 import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
+import Sidebar from './components/sidebar/Sidebar';
+import { useState, useEffect } from 'react';
+
 
 function ProtectedRoute({children}) {
   const history = useHistory();
@@ -12,7 +14,7 @@ function ProtectedRoute({children}) {
   const isAuthFunc = async () => {
     try {
         const response = await fetch("http://127.0.0.1:8443/api/users/access/", {
-          method: "GET",
+          method: "get",
           credentials: "include",
           headers: {
               "Content-Type": "application/json",
@@ -41,12 +43,25 @@ function ProtectedRoute({children}) {
 }
 
 function App() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   return (
     <div className="App">
       <Router>
         <Switch>
           <Route path={['/login', '/signup']}><Auth /></Route>
-          <Route path={['/home', '/']}><ProtectedRoute><Home /></ProtectedRoute></Route>
+          {/* <Route path={['/home', '/']}><ProtectedRoute><Home /></ProtectedRoute></Route> */}
+          <Route path={['/home', '/']}><ProtectedRoute><Sidebar /></ProtectedRoute></Route>
         </Switch>
       </Router>
     </div>

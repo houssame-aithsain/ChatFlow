@@ -7,6 +7,7 @@ from django.core import validators
 from django.contrib.auth import login, logout
 from .models import User
 from django.contrib.auth import login, logout
+from django.http import JsonResponse
 
 # Serializer for the User model
 class UserSerializer(serializers.ModelSerializer):
@@ -56,16 +57,16 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='logout')
     def logout(self, request):
-        if request.user.is_authenticated:
+        cookie = request.COOKIES.get('user')
+        if cookie:
             logout(request)
-            return Response({"message": "bye!"}, status=status.HTTP_200_OK)
+            response = Response({"message": "bye!"}, status=status.HTTP_200_OK)
+            response.delete_cookie('user')
+            return response
         return Response({"message": "error: 401"}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=False, methods=['get'], url_path='access')
     def access(self, request):
-        for key, value in request.COOKIES.items():
-            print(f"wtffff{key}: {value}", flush=True)
-        print(f"wtf ff request.user: {request.user}", flush=True)
         cookie = request.COOKIES.get('user')
         if cookie:
                 return Response({"message": "access granted"}, status=status.HTTP_200_OK)
