@@ -1,8 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
+import { useAuth } from '../../auth/AuthProvider';
 
 
 const Profile = () => {
+  const { logout } = useAuth();
   const history = useHistory();
   const [showLogout, setShowLogout] = useState(false);
   const profileRef = useRef(null);
@@ -25,7 +27,7 @@ const Profile = () => {
   const handleLogout = (e) => {
     e.stopPropagation();
     console.log('Logging out...');
-    const logout = async () => {
+    const Logout = async () => {
       try {
         const response = await fetch("http://127.0.0.1:8443/api/users/logout/", {
           method: "GET",
@@ -37,6 +39,8 @@ const Profile = () => {
         if (response.ok) {
           const data = await response.json();
           console.log('Logout:', data);
+          logout();
+          window.location.reload();
           history.push('/login');
         } else {
           const errorData = await response.json();
@@ -46,7 +50,7 @@ const Profile = () => {
         console.error('An error occurred:', error);
       }
     };
-    logout();
+    Logout();
   };
 
   return (

@@ -8,6 +8,7 @@ from django.contrib.auth import login, logout
 from .models import User
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
+from rest_framework_simplejwt.tokens import RefreshToken
 
 # Serializer for the User model
 class UserSerializer(serializers.ModelSerializer):
@@ -47,13 +48,31 @@ class UserViewSet(viewsets.ModelViewSet):
             user = User.objects.get(email=data['email'])
             if user.check_password(data['password']):
                 if user is not None:
+                    # Create JWT token
+                    refresh = RefreshToken.for_user(user)
+                    access_token = str(refresh.access_token)
+
+                    # Log the user in
                     login(request, user)
-                    response = Response(UserSerializer(user).data, status=status.HTTP_200_OK)
-                    response.set_cookie('user', user.get_session_auth_hash())
+
+                    # Serialize user data
+                    user_data = UserSerializer(user).data
+
+                    # Return the response with the token and user data
+                    response = Response({
+                        'user': user_data,
+                        'token': access_token
+                    }, status=status.HTTP_200_OK)
+
+                    # Set the session cookie (optional, for session-based login)
+                    response.set_cookie('user', user.get_session_auth_hash(), httponly=True, secure=True)
+
                     return response
-        except:
+        except User.DoesNotExist:
             return Response({"error": "User does not exist"}, status=status.HTTP_404_NOT_FOUND)
+
         return Response({"error": "Incorrect password"}, status=status.HTTP_401_UNAUTHORIZED)
+
 
     @action(detail=False, methods=['get'], url_path='logout')
     def logout(self, request):
