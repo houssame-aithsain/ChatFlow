@@ -1,0 +1,37 @@
+.fixed.inset-0.flex.flex-col.bg-gray-100 {
+    margin-left: 250px;
+    background-color: rgb(253, 167, 141);
+}
+
+.flex-1.p-2.border.border-gray-300.rounded-lg, .p-3.rounded-lg.bg-white.border.border-gray-200{
+    color: black;
+    text-align: center;
+    border-radius: 100px;
+}
+
+.p-3.rounded-lg.bg-blue-600.text-white {
+    background-color: rgb(37, 128, 192);
+}
+
+.flex.items-center.gap-2.p-4.border-t.border-gray-200.bg-white {
+    display: flex;
+    background-color: rgb(255, 197, 138);
+    height: 150px;
+}
+
+.p-2.text-gray-500.rounded-full, .flex-1.p-2.border.border-gray-300.rounded-lg, .p-2.bg-blue-600.text-white.rounded-full{
+    display: inline;
+}
+
+@media (max-width: 668px) {
+    /* Target both elements individually */
+    .fixed.inset-0.flex.flex-col.bg-gray-100 {
+        width: 100%;
+        margin-left: 0px;
+    }
+
+    .w-900.h-screen.bg-gray-800.text-white {
+        width: 100%;
+        margin-left: 0px;
+    }  
+}

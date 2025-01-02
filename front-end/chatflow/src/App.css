@@ -1,4 +1,5 @@
 @import url(auth/auth.css);
+@import url(Home/Home.css);
 
 .App {
   text-align: center;
