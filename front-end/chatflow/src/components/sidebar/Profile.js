@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../auth/AuthProvider';
+import { useAuth, useUser } from '../../auth/AuthProvider';
 
 
 const Profile = () => {
+  const user = useUser();
+  console.log('User:', user);
   const { logout } = useAuth();
   const history = useHistory();
   const [showLogout, setShowLogout] = useState(false);
@@ -66,14 +68,14 @@ const Profile = () => {
         <div className="relative">
           <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] flex items-center justify-center
             transform transition-transform duration-300 hover:scale-105">
-            <span className="text-white font-medium">HA</span>
+            <span className="text-white font-medium">{user.first_name[0] + user.last_name[0]}</span>
           </div>
           <div className="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-green-400 border-2 border-gray-900"></div>
         </div>
 
         {/* Profile Info */}
         <div className="flex-1">
-          <h3 className="text-sm font-medium">Houssame Ait Hsaine</h3>
+          <h3 className="text-sm font-medium">{user.first_name}</h3>
         </div>
 
         {/* Logout Button with Animation */}

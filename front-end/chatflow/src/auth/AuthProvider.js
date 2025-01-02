@@ -1,40 +1,54 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-// Create the Context for authentication state
+// Create Contexts
 const AuthContext = createContext();
+const UserContext = createContext();
 
-// Custom hook to use auth state in any component
+// Custom hooks to use auth and user state in any component
 export const useAuth = () => useContext(AuthContext);
+export const useUser = () => useContext(UserContext);
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
+    const [user, setUser] = useState(() => {
+        const storedUser = localStorage.getItem("user");
+        return storedUser ? JSON.parse(storedUser) : null;
+    });
     const [token, setToken] = useState(localStorage.getItem("site") || null);
 
-    // This function will be called to login and set user and token
     const login = (userData, authToken) => {
         console.log("userData", userData);
         setUser(userData);
         setToken(authToken);
-        localStorage.setItem("site", authToken); // Save token in localStorage
+
+        // Persist to localStorage
+        localStorage.setItem("site", authToken);
+        localStorage.setItem("user", JSON.stringify(userData));
     };
 
     const logout = () => {
         setUser(null);
         setToken(null);
-        console.log("setting token to null");
+
+        // Remove from localStorage
         localStorage.removeItem("site");
+        localStorage.removeItem("user");
     };
 
     useEffect(() => {
-        // Automatically check token when app loads
-        if (token) {
-            // You can make an API call here to verify the token, or handle session persistence
+        if (token && !user) {
+            // Optional: Validate token and fetch user data from API
+            const storedUser = localStorage.getItem("user");
+            if (storedUser) {
+                setUser(JSON.parse(storedUser));
+            }
         }
     }, [token]);
 
     return (
-        <AuthContext.Provider value={{ user, token, login, logout }}>
-            {children}
+        <AuthContext.Provider value={{ token, login, logout }}>
+            <UserContext.Provider value={user}>
+                {children}
+            </UserContext.Provider>
         </AuthContext.Provider>
     );
 };

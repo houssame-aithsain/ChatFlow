@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Send, Paperclip, Loader } from 'lucide-react';
+import ChatList from '../components/sidebar/ChatList';
 
 export function MessageInput({ onSendMessage, isLoading }) {
   const [message, setMessage] = useState('');
@@ -9,6 +10,7 @@ export function MessageInput({ onSendMessage, isLoading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim() || files.length > 0) {
+      // ChatList(message);
       onSendMessage(message, files);
       setMessage('');
       setFiles([]);
