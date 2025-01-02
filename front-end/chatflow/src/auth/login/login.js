@@ -13,9 +13,8 @@ async function Login(email, password ) {
         credentials: 'include',
       });
 
-      // Log the response before returning
       const data = await response.json();
-      console.log("API Response:", data); // Log the data to check its structure
+      console.log("API Response:", data);
 
       return data;
     } catch (err) {

@@ -1,6 +1,4 @@
-import React, {useState} from "react";
-
-async function Register(email, password, first_name, last_name, username) {
+async function Register(email, password, first_name, last_name, username, setIsRightPanelActive) {
     const credentails = {email, password, first_name, last_name, username};
     console.log(credentails);
 
@@ -18,6 +16,7 @@ async function Register(email, password, first_name, last_name, username) {
     if (response.ok) {
         const data = await response.json();
         console.log('registeration successful:', data);
+        setIsRightPanelActive(false);
       } else {
         const errorData = await response.json();
         console.error('registeration failed:', errorData);

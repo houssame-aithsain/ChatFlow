@@ -45,7 +45,7 @@ function Auth() {
                         <input type="text" placeholder="Username" value={username} onChange={(e) => setUserName(e.target.value)} />
                         <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
                         <input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                        <button onClick={(e) => { e.preventDefault(); Register(email, password, first_name, last_name, username); }}>
+                        <button onClick={(e) => { e.preventDefault(); Register(email, password, first_name, last_name, username, setIsRightPanelActive); setIsRightPanelActive(true)}}>
                             Sign Up
                         </button>
                     </form>
