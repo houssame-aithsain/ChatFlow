@@ -86,7 +86,7 @@ function ChatBar() {
                     <div className="flex-1 overflow-hidden overflow-y-auto">
                         <ChatContainer messages={messages} isTyping={isTyping} />
                     </div>
-                    <div className="mt-auto">
+                    <div className="mt-auto h-24">
                         <MessageInput onSendMessage={handleSendMessage} isLoading={isTyping} />
                     </div>
                 </main>

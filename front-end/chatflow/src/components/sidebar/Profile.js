@@ -56,7 +56,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="p-4 border-t border-gray-700/50" ref={profileRef}>
+    <div className="p-4 h-24 border-t border-gray-700/50" ref={profileRef}>
       <div 
         className={`relative flex items-center space-x-3 p-2 rounded-lg 
           ${showLogout ? 'bg-gradient-to-r from-[#FF4B2B]/10 to-[#FF416C]/10' : ''}
