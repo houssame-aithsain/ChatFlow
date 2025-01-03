@@ -40,6 +40,8 @@ CORS_ALLOWED_ORIGINS = [
 
 
 INSTALLED_APPS = [
+    "daphne",
+    "channels",
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -49,6 +51,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'user',
+    'chat',
 ]
 
 MIDDLEWARE = [    
@@ -151,3 +154,4 @@ SESSION_COOKIE_NAME = 'sessionid'
 SESSION_COOKIE_SECURE = False  # Set to True if using HTTPS
 SESSION_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = 'Lax'  # Adjust for cross-origin requests if needed
+ASGI_APPLICATION = "chatFlow.asgi.application"

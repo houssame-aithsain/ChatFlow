@@ -14,4 +14,4 @@ RUN ./start.sh
 
 EXPOSE 8443
 
-CMD [ "python", "manage.py", "runserver", "0.0.0.0:8443" ]
+CMD ["daphne", "-p", "8443", "-b", "0.0.0.0", "chatFlow.asgi:application"]

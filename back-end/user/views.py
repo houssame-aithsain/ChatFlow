@@ -51,7 +51,9 @@ class UserViewSet(viewsets.ModelViewSet):
                     # Create JWT token
                     refresh = RefreshToken.for_user(user)
                     access_token = str(refresh.access_token)
-
+                    user.TOKEN = access_token
+                    print(f"user token {user.TOKEN}", flush=True)
+                    user.save()
                     # Log the user in
                     login(request, user)
 
