@@ -5,6 +5,15 @@
 	box-sizing: border-box;
 }
 
+.login-section {
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	height: 100vh;
+	background-color: #d4989878;
+}
+
+
 body {
 	background: #f6f5f7;
 	display: flex;
