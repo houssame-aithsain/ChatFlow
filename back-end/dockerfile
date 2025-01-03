@@ -8,6 +8,8 @@ RUN apt-get update -y && apt-get upgrade -y && chmod +x ./start.sh
 
 RUN pip install -r requirements.txt
 
+RUN pip install -q -U google-generativeai
+
 RUN ./start.sh
 
 # ENV PYTHONUNBUFFERED=1

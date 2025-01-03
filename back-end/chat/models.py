@@ -10,4 +10,4 @@ class Message(models.Model):
     is_ai_chat = models.BooleanField(default=True)  # Whether it's part of the AI communication
 
     def __str__(self):
-        return f"Message from {self.user.username} to AI at {self.timestamp}"
+        return f"Message from {self.user.username} to AI at {self.timestamp} |\n with message: {self.user_message} |\n and response: {self.ai_response}"

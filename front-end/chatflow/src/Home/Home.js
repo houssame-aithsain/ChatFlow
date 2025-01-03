@@ -2,9 +2,44 @@ import { ChatContainer } from '../chat/ChatContainer'
 import { MessageInput } from '../chat/MessageInput';
 import Sidebar from '../components/sidebar/Sidebar';
 import { useState, useEffect } from 'react';
-import { useHistory } from 'react-router-dom';
+import { AuthProvider, useAuth } from '../auth/AuthProvider';
+
+async function callSocket(token, user_message) {
+    return new Promise((resolve, reject) => {
+        const socketUrl = `ws://127.0.0.1:8443/ws/chat/?token=${token.token}`;
+        const socket = new WebSocket(socketUrl);
+
+        socket.onopen = function () {
+            const message = {
+                type: "chat_message",
+                message: user_message,
+            };
+            socket.send(JSON.stringify(message));
+        };
+
+        socket.onmessage = function (event) {
+            try {
+                const data = JSON.parse(event.data);
+                console.log("Message from server: ", data.ai_response);
+                resolve(data.ai_response);
+            } catch (error) {
+                reject(error);
+            }
+        };
+
+        socket.onerror = function (error) {
+            reject(error);
+        };
+
+        socket.onclose = function () {
+            console.log("WebSocket connection closed.");
+        };
+    });
+}
+
 
 function ChatBar() {
+    const token = useAuth();
     const [messages, setMessages] = useState([]); // tomorrows i need to start from here
     const [isTyping, setIsTyping] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -21,16 +56,17 @@ function ChatBar() {
 
         // Simulate AI response
         setIsTyping(true);
-        setTimeout(() => {
+        const aiResponse = async () => {
             const aiMessage = {
                 id: (Date.now() + 1).toString(),
-                content: `Response to: ${content}`,
+                content: await callSocket(token, userMessage.content),
                 timestamp: new Date(),
                 isAI: true,
             };
             setMessages((prev) => [...prev, aiMessage]);
             setIsTyping(false);
-        }, 1500);
+        };
+        await aiResponse();
     };
 
     useEffect(() => {
@@ -47,11 +83,11 @@ function ChatBar() {
         <div className="w-900 h-screen bg-gray-800 text-white">
             <div className="fixed inset-0 flex flex-col bg-gray-100">
                 <main className="flex-1 flex flex-col min-h-0">
-                    <div className="flex-1 overflow-hidden">
+                    <div className="flex-1 overflow-hidden overflow-y-auto">
                         <ChatContainer messages={messages} isTyping={isTyping} />
                     </div>
                     <div className="mt-auto">
-                        <MessageInput messageLength={messages.length} onSendMessage={handleSendMessage} isLoading={isTyping} />
+                        <MessageInput onSendMessage={handleSendMessage} isLoading={isTyping} />
                     </div>
                 </main>
             </div>

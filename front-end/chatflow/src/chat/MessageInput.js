@@ -1,42 +1,17 @@
 import React, { useState, useRef } from 'react';
 import { Send, Paperclip, Loader } from 'lucide-react';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
-import { convTitle } from '../components/sidebar/ChatList';
-
-function callSocket(token, message) {
-
-  console.log(token.token);
-  const socketUrl = `ws://127.0.0.1:8443/ws/chat/?token=${token.token}`;
-
-  const socket = new WebSocket(socketUrl);
-
-  socket.onopen = function (event) {
-    const message = {
-      type: "chat_message",
-      message: "Hello from the front-end!",
-    };
-    socket.send(JSON.stringify(message));
-  };
-
-  socket.onmessage = function (event) {
-    console.log("Received data:", event.data);
-  };
-}
 
 export function MessageInput({ messageLength, onSendMessage, isLoading }) {
   const token = useAuth();
-  const [message, setMessage] = useState('');
+  let [message, setMessage] = useState('');
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
 
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (message.trim() || files.length > 0) {
-      if (messageLength === 0) {
-        callSocket(token);
-      }
-      // ChatList(message);
       onSendMessage(message, files);
       setMessage('');
       setFiles([]);

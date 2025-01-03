@@ -7,6 +7,7 @@ from .models import Message
 from datetime import datetime
 from user.models import User
 from urllib.parse import parse_qs
+import google.generativeai as genai
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -19,7 +20,6 @@ class ChatConsumer(WebsocketConsumer):
                 self.user = User.objects.get(TOKEN=user_token)
                 print(f"Connected-------------->{self.user}", flush=True)
                 self.accept()
-                return self.user
             except User.DoesNotExist:
                 print("User not found", flush=True)
                 return None
@@ -35,26 +35,30 @@ class ChatConsumer(WebsocketConsumer):
         text_data_json = json.loads(text_data)
         user_message = text_data_json["message"]
 
-        if not self.user.is_authenticated:
-            return 
+        # if not self.user.is_authenticated:
+        #     return 
 
         msg = Message.objects.create(
             user=self.user,
             ai_chatbot="AI Chatbot",
             user_message=user_message,
-            ai_response="hello from the backend :)",
+            ai_response="",
         )
-        print(f"Message created: {msg}", flush=True)
         # Generate the AI response (replace this with your AI logic)
         ai_response = self.get_ai_response(user_message)
 
         msg.ai_response = ai_response
         msg.save()
 
+        print(f"Message created: {msg}", flush=True)
         self.send_message(msg)
 
     def get_ai_response(self, user_message):
-        return f"AI response to: {user_message}"
+        genai.configure(api_key="AIzaSyB6BgJnAkSygBsC7WEKZWzE6L_swB5n8sc")
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(user_message)
+        print(response.text, flush=True)
+        return response.text
 
     def send_message(self, msg):
         self.send(
