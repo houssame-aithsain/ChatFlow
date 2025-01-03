@@ -1,11 +1,11 @@
 import { ChatContainer } from '../chat/ChatContainer'
-import { MessageInput } from '../chat//MessageInput';
+import { MessageInput } from '../chat/MessageInput';
 import Sidebar from '../components/sidebar/Sidebar';
 import { useState, useEffect } from 'react';
 import { useHistory } from 'react-router-dom';
 
 function ChatBar() {
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState([]); // tomorrows i need to start from here
     const [isTyping, setIsTyping] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -51,7 +51,7 @@ function ChatBar() {
                         <ChatContainer messages={messages} isTyping={isTyping} />
                     </div>
                     <div className="mt-auto">
-                        <MessageInput onSendMessage={handleSendMessage} isLoading={isTyping} />
+                        <MessageInput messageLength={messages.length} onSendMessage={handleSendMessage} isLoading={isTyping} />
                     </div>
                 </main>
             </div>

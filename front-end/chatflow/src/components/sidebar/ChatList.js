@@ -1,20 +1,34 @@
 import React, { useState } from 'react';
 
-const ChatList = () => {
+export function convTitle(message) {
+  if (message && message.length > 0) {
+    convTitle.staticVariable = message;
+  }
+
+  return convTitle.staticVariable;
+}
+
+const ChatList = ()  => {
   const [conv, setConv] = useState([]);
 
   const AddChat = () => {
-    setConv([...conv, { id: conv.length + 1, name: `Chat ${conv.length + 1}` }]);
+    setConv([...conv, { id: conv.length + 1, name: `${convTitle() ? convTitle() : "no name for this chat"}` }]);
   };
 
   return (
     <div className="flex-1 overflow-y-auto p-4">
-      <div className="mb-4 flex items-center justify-between">
+      <div className="mb-4 flex items-center justify-between space-x-1">
         <button
           onClick={AddChat} // Handle click here
-          className="text-sm px-16 py-2 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
+          className="text-sm px-7 py-1 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
         >
           New Chat
+        </button>
+        <button
+          onClick={AddChat} // Handle click here
+          className="text-sm px-7 py-1 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
+        >
+          Save Chat
         </button>
       </div>
       <div className="space-y-2">

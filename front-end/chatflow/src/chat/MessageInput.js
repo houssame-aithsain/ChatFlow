@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
 import { Send, Paperclip, Loader } from 'lucide-react';
-import ChatList from '../components/sidebar/ChatList';
+import { convTitle } from '../components/sidebar/ChatList';
 
-export function MessageInput({ onSendMessage, isLoading }) {
+export function MessageInput({messageLength, onSendMessage, isLoading }) {
   const [message, setMessage] = useState('');
   const [files, setFiles] = useState([]);
   const fileInputRef = useRef(null);
@@ -10,6 +10,10 @@ export function MessageInput({ onSendMessage, isLoading }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (message.trim() || files.length > 0) {
+      if (messageLength === 0) {
+        convTitle(message);
+        // i want to call AddChat function from ChatList.js here;
+      }
       // ChatList(message);
       onSendMessage(message, files);
       setMessage('');
