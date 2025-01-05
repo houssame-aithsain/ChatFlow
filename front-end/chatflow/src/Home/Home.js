@@ -18,37 +18,80 @@ export function convTitle(message) {
 export const AddChatHistory = ({ conv, setConv }) => {
     if (socket !== null)
         socket.close();
-    setConv([...conv, { id: conv.length + 1, name: `${convTitle() ? convTitle() : "no name for this chat"}` }]);
+    window.location.reload();
 };
 
-export const getUserCchatHistory = async (token) => {
-    const response = await fetch(`http://localhost:8443/c/sessions/chatsession/?token=${token.token}`, {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-    });
-    return response.json();
+export const getUserCchatHistory = async (token, id) => {
+    console.log('------------------>getUserCchatHistory', id);
+    if (id === 0) {
+        const response = await fetch(`http://localhost:8443/c/sessions/chatsession/?token=${token.token}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        return response.json();
+    } else {
+        const response = await fetch(`http://localhost:8443/c/sessions/chatsession/?token=${token.token}`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ id: id }),
+            credentials: 'include',
+        });
+        return response.json();
+    };
 };
 
-const ChatList = ({ token, conv, setConv }) => {
+const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
     console.log('------------------>chatlist');
 
     useEffect(() => {
         const fetchChatHistory = async () => {
-            const chats = await getUserCchatHistory(token);
+            const chats = await getUserCchatHistory(token, 0);
             console.log(chats);
-            setConv(prevConv => [
-                ...prevConv,
-                ...chats.map(chat => ({
-                    id: chat.id,
-                    name: chat.messages[0].user_message.length > 26 ? chat.messages[0].user_message.substring(0, 23) + "..." : chat.messages[0].user_message
-                }))
-            ]);
+            if (chats.length > 0) {
+                setConv(prevConv => [
+                    ...prevConv,
+                    ...chats.map(chat => ({
+                        id: chat.id,
+                        name: chat.messages[0] ? (chat.messages[0].user_message.length > 26 ? chat.messages[0].user_message.substring(0, 23) + "..." : chat.messages[0].user_message) : "No input",
+                    }))
+                ]);
+            }
         };
 
         fetchChatHistory();
     }, [token, setConv]);
+
+    const RenderChatHistory = (id) => {
+        const fetchChatHistory = async (id) => {
+            setMessages([]);
+            const chats = await getUserCchatHistory(token, id);
+            const newMessages = [];
+            chats.messages.forEach((message) => {
+                // User message
+                newMessages.push({
+                    id: message.id,
+                    content: message.user_message,
+                    timestamp: new Date(message.timestamp),
+                    isAI: false,
+                });
+
+                // AI response
+                newMessages.push({
+                    id: `${message.id}-ai`, // Ensure unique ID for AI message
+                    content: message.ai_response,
+                    timestamp: new Date(message.timestamp),
+                    isAI: true,
+                });
+            });
+            setMessages((prev) => [...prev, ...newMessages]);
+        }
+        fetchChatHistory(id);
+    };
+
 
     return (
         <div className="flex-1 overflow-y-auto p-4">
@@ -66,6 +109,7 @@ const ChatList = ({ token, conv, setConv }) => {
                         <div
                             key={chat.id}
                             className="bg-slate-800 p-3 rounded-lg cursor-pointer transition-all duration-300 group hover:bg-gradient-to-r hover:from-[#FF4B2B]/10 hover:to-[#FF416C]/10 border border-transparent hover:border-[#FF416C]/20"
+                            onClick={(e) => { e.preventDefault(); RenderChatHistory(chat.id) }}
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
@@ -85,8 +129,7 @@ const ChatList = ({ token, conv, setConv }) => {
     );
 };
 
-
-const Sidebar = ({ token, conv, setConv }) => {
+const Sidebar = ({ token, conv, setConv, messages, setMessages }) => {
     console.log('------------------->sidebar');
 
     const [isOpen, setIsOpen] = useState(true);
@@ -151,7 +194,7 @@ const Sidebar = ({ token, conv, setConv }) => {
                 </div>
 
                 <ModelSwitcher />
-                <ChatList conv={conv} setConv={setConv} token={token} />
+                <ChatList conv={conv} setConv={setConv} token={token} messages={messages} setMessages={setMessages} />
                 <Profile />
             </div>
         </>
@@ -226,8 +269,7 @@ async function callSocket(token, user_message, { conv, setConv }) {
     });
 }
 
-function ChatBar({ token, conv, setConv }) {
-    const [messages, setMessages] = useState([]); // tomorrows i need to start from here
+function ChatBar({ token, conv, setConv, messages, setMessages }) {
     const [isTyping, setIsTyping] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
 
@@ -272,7 +314,7 @@ function ChatBar({ token, conv, setConv }) {
             <div className="fixed inset-0 flex flex-col bg-gray-100">
                 <main className="flex-1 flex flex-col min-h-0">
                     <div className="flex-1 overflow-hidden overflow-y-auto">
-                        <ChatContainer messages={messages} isTyping={isTyping} />
+                        <ChatContainer messages={messages} isTyping={isTyping} setMessages={setMessages} />
                     </div>
                     <div className="mt-auto h-24">
                         <MessageInput onSendMessage={handleSendMessage} isLoading={isTyping} />
@@ -284,13 +326,14 @@ function ChatBar({ token, conv, setConv }) {
 }
 
 function Home() {
+    const [messages, setMessages] = useState([]); // tomorrows i need to start from here
     const [conv, setConv] = useState([]);
     const token = useAuth();
 
     return (
         <>
-            <Sidebar conv={conv} setConv={setConv} token={token} />
-            <ChatBar conv={conv} setConv={setConv} token={token} />
+            <Sidebar conv={conv} setConv={setConv} token={token} messages={messages} setMessages={setMessages} />
+            <ChatBar conv={conv} setConv={setConv} token={token} messages={messages} setMessages={setMessages} />
         </>
     );
 }

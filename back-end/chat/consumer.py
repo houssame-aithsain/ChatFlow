@@ -93,7 +93,7 @@ class ChatConsumer(WebsocketConsumer):
         self.Gmessages.append(messages[0])
         chat_completion = client.chat.completions.create(
             messages=self.Gmessages,
-            model="llama-3.3-70b-versatile",
+            model="llama-3.1-8b-instant",
             max_tokens=1024,
             top_p=1,
             stop=None,

@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { Message } from './Message';
 
-export function ChatContainer({ messages, isTyping }) {
+export function ChatContainer({ messages, isTyping, setMessages }) {
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {

@@ -31,7 +31,7 @@ class SessionsManager(viewsets.ModelViewSet):
         except User.DoesNotExist:
             return None
     
-    @action(detail=False, methods=['get'], url_path='chatsession')
+    @action(detail=False, methods=['get', 'post'], url_path='chatsession')
     def chatsession(self, request):
         print("----------------------------------------------------++++++++++++", flush=True)
         token = request.query_params.get("token")
@@ -39,6 +39,15 @@ class SessionsManager(viewsets.ModelViewSet):
         if token and token != "":
             user = self.get_user_by_token(token)
             if user:
+                if request.method == 'POST':
+                    print("----------------------POST----------------------", flush=True)
+                    try:
+                        session_id = request.data.get("id")
+                        session = ChatSession.objects.get(id=session_id)
+                        serialized_session = ChatSessionSerializer(session)
+                        return Response(serialized_session.data, status=status.HTTP_200_OK)
+                    except Exception as e:
+                        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
                 try:
                     print(f"----------------------{request.user}", flush=True)
                     sessions = ChatSession.objects.filter(user=user)
