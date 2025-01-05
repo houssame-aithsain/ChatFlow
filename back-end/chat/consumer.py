@@ -13,12 +13,8 @@ from groq import Groq
 #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
 
 class ChatConsumer(WebsocketConsumer):
-    Gmessages = [
-        {
-            "role": "system",
-            "content": "you are a helpful assistant."
-        },
-    ]
+    Gmessages = {"users": []}
+
     def connect(self):
         query_string = self.scope.get("query_string", b"")
         query_params = parse_qs(query_string.decode("utf-8"))
@@ -29,6 +25,17 @@ class ChatConsumer(WebsocketConsumer):
                 self.user = User.objects.get(TOKEN=user_token)
                 self.ChatSession = self.create_new_chat_session()
                 print(f"Connected-------------->{self.user}", flush=True)
+                user_section = {
+                    "user_id": self.user.id,
+                    "history": [
+                        {
+                            "role": "system",
+                            "content": "you are a helpful assistant.",
+                        }
+                    ],
+                }
+                if not any(u["user_id"] == self.user.id for u in self.Gmessages["users"]):
+                    self.Gmessages["users"].append(user_section)
                 self.accept()
             except User.DoesNotExist:
                 print("User not found", flush=True)
@@ -84,22 +91,25 @@ class ChatConsumer(WebsocketConsumer):
             api_key="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"
 
         )
-        messages = [
-            {
-                "role": "user",
-                "content": user_message,
-            }
-        ]
-        self.Gmessages.append(messages[0])
+        user_section = next(
+            (u for u in self.Gmessages["users"] if u["user_id"] == self.user.id), None
+        )
+
+        if not user_section:
+            raise ValueError(f"No user session found for user ID {self.user.id}")
+
+        user_section["history"].append({"role": "user", "content": user_message})
+        
         chat_completion = client.chat.completions.create(
-            messages=self.Gmessages,
+            messages=user_section["history"],
             model="llama-3.1-8b-instant",
             max_tokens=1024,
             top_p=1,
             stop=None,
             stream=False,
         )
-        self.Gmessages.append({"role": "assistant", "content": chat_completion.choices[0].message.content})
+
+        user_section["history"].append({"role": "system", "content": chat_completion.choices[0].message.content})
         return chat_completion.choices[0].message.content
 
     def send_message(self, msg):
