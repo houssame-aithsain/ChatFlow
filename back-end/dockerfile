@@ -10,6 +10,8 @@ RUN pip install -r requirements.txt
 
 RUN pip install -q -U google-generativeai
 
+RUN python manage.py collectstatic
+
 RUN pip install groq
 
 RUN ./start.sh

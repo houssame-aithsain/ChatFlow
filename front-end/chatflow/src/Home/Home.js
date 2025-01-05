@@ -15,21 +15,47 @@ export function convTitle(message) {
     return convTitle.staticVariable;
 }
 
-export const AddChatHistory = ({conv, setConv}) => {
+export const AddChatHistory = ({ conv, setConv }) => {
     if (socket !== null)
         socket.close();
     setConv([...conv, { id: conv.length + 1, name: `${convTitle() ? convTitle() : "no name for this chat"}` }]);
 };
 
-const ChatList = ({conv, setConv}) => {
+export const getUserCchatHistory = async (token) => {
+    const response = await fetch(`http://localhost:8443/c/sessions/chatsession/?token=${token.token}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    });
+    return response.json();
+};
+
+const ChatList = ({ token, conv, setConv }) => {
     console.log('------------------>chatlist');
+
+    useEffect(() => {
+        const fetchChatHistory = async () => {
+            const chats = await getUserCchatHistory(token);
+            console.log(chats);
+            setConv(prevConv => [
+                ...prevConv,
+                ...chats.map(chat => ({
+                    id: chat.id,
+                    name: chat.messages[0].user_message.length > 26 ? chat.messages[0].user_message.substring(0, 23) + "..." : chat.messages[0].user_message
+                }))
+            ]);
+        };
+
+        fetchChatHistory();
+    }, [token, setConv]);
 
     return (
         <div className="flex-1 overflow-y-auto p-4">
-            <div className="mb-4 flex items-center justify-between space-x-1">
+            <div className="mb-4 flex items-center justify-between">
                 <button
-                    onClick={() => AddChatHistory({conv, setConv})}
-                    className="text-sm px-20 py-1 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
+                    onClick={AddChatHistory} // Handle click here
+                    className="text-sm px-16 py-2 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
                 >
                     New Chat
                 </button>
@@ -39,13 +65,13 @@ const ChatList = ({conv, setConv}) => {
                     conv.map((chat) => (
                         <div
                             key={chat.id}
-                            className="p-3 rounded-lg cursor-pointer transition-all duration-300 group hover:bg-gradient-to-r hover:from-[#FF4B2B]/10 hover:to-[#FF416C]/10 border border-transparent hover:border-[#FF416C]/20"
+                            className="bg-slate-800 p-3 rounded-lg cursor-pointer transition-all duration-300 group hover:bg-gradient-to-r hover:from-[#FF4B2B]/10 hover:to-[#FF416C]/10 border border-transparent hover:border-[#FF416C]/20"
                         >
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
-                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#FF4B2B]/20 to-[#FF416C]/20 flex items-center justify-center">
+                                    {/* <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#FF4B2B]/20 to-[#FF416C]/20 flex items-center justify-center">
                                         <span className="text-sm">{chat.id}</span>
-                                    </div>
+                                    </div> */}
                                     <div>
                                         <h3 className="text-sm font-medium">{chat.name}</h3>
                                     </div>
@@ -60,7 +86,7 @@ const ChatList = ({conv, setConv}) => {
 };
 
 
-const Sidebar = ({conv, setConv}) => {
+const Sidebar = ({ token, conv, setConv }) => {
     console.log('------------------->sidebar');
 
     const [isOpen, setIsOpen] = useState(true);
@@ -125,7 +151,7 @@ const Sidebar = ({conv, setConv}) => {
                 </div>
 
                 <ModelSwitcher />
-                <ChatList conv={conv} setConv={setConv} />
+                <ChatList conv={conv} setConv={setConv} token={token} />
                 <Profile />
             </div>
         </>
@@ -133,7 +159,7 @@ const Sidebar = ({conv, setConv}) => {
 };
 
 
-async function callSocket(token, user_message, {conv, setConv}) {
+async function callSocket(token, user_message, { conv, setConv }) {
     return new Promise((resolve, reject) => {
         const socketUrl = `ws://127.0.0.1:8443/ws/chat/?token=${token.token}`;
         if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -200,8 +226,7 @@ async function callSocket(token, user_message, {conv, setConv}) {
     });
 }
 
-function ChatBar({conv, setConv}) {
-    const token = useAuth();
+function ChatBar({ token, conv, setConv }) {
     const [messages, setMessages] = useState([]); // tomorrows i need to start from here
     const [isTyping, setIsTyping] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
@@ -222,7 +247,7 @@ function ChatBar({conv, setConv}) {
         const aiResponse = async () => {
             const aiMessage = {
                 id: (Date.now() + 1).toString(),
-                content: await callSocket(token, userMessage.content, {conv, setConv}),
+                content: await callSocket(token, userMessage.content, { conv, setConv }),
                 timestamp: new Date(),
                 isAI: true,
             };
@@ -260,11 +285,12 @@ function ChatBar({conv, setConv}) {
 
 function Home() {
     const [conv, setConv] = useState([]);
+    const token = useAuth();
 
     return (
         <>
-            <Sidebar conv={conv} setConv={setConv}/>
-            <ChatBar conv={conv} setConv={setConv}/>
+            <Sidebar conv={conv} setConv={setConv} token={token} />
+            <ChatBar conv={conv} setConv={setConv} token={token} />
         </>
     );
 }
