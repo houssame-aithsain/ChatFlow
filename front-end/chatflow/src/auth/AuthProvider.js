@@ -20,7 +20,6 @@ export const AuthProvider = ({ children }) => {
         setToken(authToken);
 
         // Persist to localStorage
-        // document.cookie = `token=${authToken}; path=/; secure=true; HttpOnly`;
         localStorage.setItem("site", authToken);
         localStorage.setItem("user", JSON.stringify(userData));
     };

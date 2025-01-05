@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.urls import path
 from django.urls import include
 import user
+import chat
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('user.urls')),
+    path('c/', include('chat.urls')),
 ]

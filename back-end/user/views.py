@@ -4,7 +4,6 @@ from rest_framework.decorators import action
 from rest_framework import status
 import sys
 from django.core import validators
-from django.contrib.auth import login, logout
 from .models import User
 from django.contrib.auth import login, logout
 from django.http import JsonResponse
@@ -79,12 +78,12 @@ class UserViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=['get'], url_path='logout')
     def logout(self, request):
         cookie = request.COOKIES.get('user')
-        if cookie:
-            logout(request)
-            response = Response({"message": "bye!"}, status=status.HTTP_200_OK)
-            response.delete_cookie('user')
-            return response
-        return Response({"message": "error: 401"}, status=status.HTTP_401_UNAUTHORIZED)
+        # if cookie:
+        logout(request)
+        response = Response({"message": "bye!"}, status=status.HTTP_200_OK)
+        response.delete_cookie('user')
+        return response
+        # return Response({"message": "error: 401"}, status=status.HTTP_401_UNAUTHORIZED)
 
     @action(detail=False, methods=['get'], url_path='access')
     def access(self, request):
