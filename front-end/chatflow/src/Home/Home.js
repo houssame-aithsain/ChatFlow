@@ -53,10 +53,10 @@ const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
     const history = useHistory();
     useEffect(() => {
         const fetchChatHistory = async () => {
-            const chats = await getUserCchatHistory(token, 0);
+            var chats = await getUserCchatHistory(token, 0);
             // console.log(chats);
             if (chats.length > 0) {
-                chats = chats.filter(chat => chat.messages[0].length > 0);
+                chats = chats.filter(chat => chat.messages.length > 0);
                 setConv(prevConv => [
                     ...prevConv,
                     ...chats.map(chat => ({
