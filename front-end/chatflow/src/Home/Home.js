@@ -56,6 +56,7 @@ const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
             const chats = await getUserCchatHistory(token, 0);
             // console.log(chats);
             if (chats.length > 0) {
+                chats = chats.filter(chat => chat.messages[0].length > 0);
                 setConv(prevConv => [
                     ...prevConv,
                     ...chats.map(chat => ({
