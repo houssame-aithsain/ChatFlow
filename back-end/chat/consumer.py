@@ -51,6 +51,8 @@ class ChatConsumer(WebsocketConsumer):
         )
         if user_section != None:
             self.Gmessages["users"].remove(user_section)
+        self.user.ai_model_id = "gemma2-9b-it"
+        self.user.save()
         self.close()
 
     def receive(self, text_data):
@@ -94,7 +96,6 @@ class ChatConsumer(WebsocketConsumer):
             self.Gmessages["users"].append(user_section)
     
     def create_new_chat_session(self):
-        """Create a new chat session."""
         chat_session = ChatSession.objects.create(user=self.user)
         return chat_session
 
@@ -108,7 +109,6 @@ class ChatConsumer(WebsocketConsumer):
             self.load_history()
             print(f"Chat session not found for ID {chat_session_id}", flush=True)
 
-        # Create the message linked to the chat session
         message = Message.objects.create(
             user=user,
             ai_chatbot="AI Chatbot",
@@ -133,10 +133,10 @@ class ChatConsumer(WebsocketConsumer):
             raise ValueError(f"No user session found for user ID {self.user.id}")
 
         user_section["history"].append({"role": "user", "content": user_message})
-        
+        print(f"----------->>>>>>> ai model {self.user.ai_model_id}", flush=True)
         chat_completion = client.chat.completions.create(
             messages=user_section["history"],
-            model="llama-3.1-8b-instant",
+            model=self.user.ai_model_id,
             max_tokens=1024,
             top_p=1,
             stop=None,

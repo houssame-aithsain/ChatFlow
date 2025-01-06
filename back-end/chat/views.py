@@ -78,3 +78,20 @@ class SessionsManager(viewsets.ModelViewSet):
                 return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
         else:
             return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=['post'], url_path='switch-model')
+    def switch_model(self, request):
+        token = request.query_params.get("token")
+        user = self.get_user_by_token(token)
+        if user is not None:
+            try:
+                user.ai_model_id = request.data.get("model_id")
+                user.save()
+                print(f"Model switched/////>>>>> {user.ai_model_id}", flush=True)
+                return Response({"message": "Model switched"}, status=status.HTTP_200_OK)
+            except ChatSession.DoesNotExist:
+                return Response({"message": "Model not found"}, status=status.HTTP_404_NOT_FOUND)
+            except Exception as e:
+                return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response({"message": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)

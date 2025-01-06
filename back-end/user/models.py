@@ -42,6 +42,7 @@ class User(AbstractBaseUser):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_authenticated = models.BooleanField(default=False)
+    ai_model_id = models.CharField(max_length=254, null=True, default="gemma2-9b-it")
     TOKEN = models.CharField(max_length=1000, null=True)
 
     USERNAME_FIELD = 'email'

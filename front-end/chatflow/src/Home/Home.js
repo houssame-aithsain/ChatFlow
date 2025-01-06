@@ -173,7 +173,7 @@ const Sidebar = ({ token, conv, setConv, messages, setMessages }) => {
 
     const [isOpen, setIsOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
-
+    const history = useHistory();
     // Handle window resize and set mobile state
     useEffect(() => {
         const handleResize = () => {
@@ -232,7 +232,7 @@ const Sidebar = ({ token, conv, setConv, messages, setMessages }) => {
                     </div>
                 </div>
 
-                <ModelSwitcher />
+                <ModelSwitcher token={token} socket={socket} setMessages={setMessages} history={history}/>
                 <ChatList conv={conv} setConv={setConv} token={token} messages={messages} setMessages={setMessages} />
                 <Profile />
             </div>
