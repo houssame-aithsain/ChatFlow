@@ -26,7 +26,7 @@ class ChatConsumer(WebsocketConsumer):
                 self.ChatSession = self.create_new_chat_session()
                 print(f"Connected-------------->{self.user}", flush=True)
                 user_section = {
-                    "user_id": self.user.id,
+                    "session_id": self.ChatSession.id,
                     "history": [
                         {
                             "role": "system",
@@ -34,7 +34,7 @@ class ChatConsumer(WebsocketConsumer):
                         }
                     ],
                 }
-                if not any(u["user_id"] == self.user.id for u in self.Gmessages["users"]):
+                if not any(u["session_id"] == self.ChatSession.id for u in self.Gmessages["users"]):
                     self.Gmessages["users"].append(user_section)
                 self.accept()
             except User.DoesNotExist:
@@ -46,13 +46,24 @@ class ChatConsumer(WebsocketConsumer):
 
     def disconnect(self, close_code):
         print("Disconnected", flush=True)
+        user_section = next(
+            (u for u in self.Gmessages["users"] if u["session_id"] == self.ChatSession.id), None
+        )
+        if user_section != None:
+            self.Gmessages["users"].remove(user_section)
         self.close()
 
     def receive(self, text_data):
         print("-+-+-+-+-+-+-+-+>Received message", flush=True)
         text_data_json = json.loads(text_data)
         user_message = text_data_json["message"]
-
+        current_session_id = text_data_json["id"]
+        if current_session_id and current_session_id > -1:
+            try:
+                self.ChatSession = get_object_or_404(ChatSession, id=current_session_id)
+                self.load_history()
+            except:
+                print(f"Chat session not found for ID {current_session_id}", flush=True)
         # if not self.user.is_authenticated:
         #     return 
         # Generate the AI response (replace this with your AI logic)
@@ -62,6 +73,26 @@ class ChatConsumer(WebsocketConsumer):
         print(f"Message created: {response}", flush=True)
         self.send_message(response)
 
+    # get back the removed data
+    def load_history(self):
+        user_section = next(
+            (u for u in self.Gmessages["users"] if u["session_id"] == self.ChatSession.id), None
+        )
+        if user_section == None:
+            messages = self.ChatSession.messages.all()
+            user_section = {
+                "session_id": self.ChatSession.id,
+                "history": [],
+            }
+            for message in messages:
+                user_section["history"].append(
+                    {"role": "user", "content": message.user_message}
+                )
+                user_section["history"].append(
+                    {"role": "system", "content": message.ai_response}
+                )
+            self.Gmessages["users"].append(user_section)
+    
     def create_new_chat_session(self):
         """Create a new chat session."""
         chat_session = ChatSession.objects.create(user=self.user)
@@ -72,7 +103,10 @@ class ChatConsumer(WebsocketConsumer):
         try:
             chat_session = ChatSession.objects.get(id=chat_session_id)  # Fetch the chat session
         except ChatSession.DoesNotExist:
-            raise ValueError("Chat session not found.")
+            self.ChatSession = self.create_new_chat_session()
+            chat_session = self.ChatSession
+            self.load_history()
+            print(f"Chat session not found for ID {chat_session_id}", flush=True)
 
         # Create the message linked to the chat session
         message = Message.objects.create(
@@ -92,7 +126,7 @@ class ChatConsumer(WebsocketConsumer):
 
         )
         user_section = next(
-            (u for u in self.Gmessages["users"] if u["user_id"] == self.user.id), None
+            (u for u in self.Gmessages["users"] if u["session_id"] == self.ChatSession.id), None
         )
 
         if not user_section:
@@ -113,12 +147,14 @@ class ChatConsumer(WebsocketConsumer):
         return chat_completion.choices[0].message.content
 
     def send_message(self, msg):
+        session_id = self.ChatSession.id
         self.send(
             text_data=json.dumps(
                 {
                     "message": msg.user_message,
                     "ai_response": msg.ai_response,
                     "timestamp": msg.timestamp.isoformat(),
+                    "id": session_id,
                 }
             )
         )

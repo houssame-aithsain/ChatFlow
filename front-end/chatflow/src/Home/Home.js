@@ -4,8 +4,10 @@ import { AuthProvider, useAuth } from '../auth/AuthProvider';
 import React, { useEffect, useState } from 'react';
 import ModelSwitcher from '../components/sidebar/ModelSwitcher';
 import Profile from '../components/sidebar/Profile';
+import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 
 var socket = null;
+var currentSession = -1
 
 export function convTitle(message) {
     if (message && message.length > 0) {
@@ -15,14 +17,17 @@ export function convTitle(message) {
     return convTitle.staticVariable;
 }
 
-export const AddChatHistory = ({ conv, setConv }) => {
-    if (socket !== null)
+export const AddChatHistory = (setMessages, history) => {
+    if (socket !== null) {
         socket.close();
-    window.location.reload();
+        console.log("------->Socket closed<-------");
+    }
+    currentSession = -1;
+    setMessages([]);
+    history.push('/home');
 };
 
 export const getUserCchatHistory = async (token, id) => {
-    console.log('------------------>getUserCchatHistory', id);
     if (id === 0) {
         const response = await fetch(`http://localhost:8443/c/sessions/chatsession/?token=${token.token}`, {
             method: 'GET',
@@ -45,12 +50,11 @@ export const getUserCchatHistory = async (token, id) => {
 };
 
 const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
-    console.log('------------------>chatlist');
-
+    const history = useHistory();
     useEffect(() => {
         const fetchChatHistory = async () => {
             const chats = await getUserCchatHistory(token, 0);
-            console.log(chats);
+            // console.log(chats);
             if (chats.length > 0) {
                 setConv(prevConv => [
                     ...prevConv,
@@ -66,6 +70,7 @@ const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
     }, [token, setConv]);
 
     const RenderChatHistory = (id) => {
+        currentSession = id;
         const fetchChatHistory = async (id) => {
             setMessages([]);
             const chats = await getUserCchatHistory(token, id);
@@ -92,12 +97,40 @@ const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
         fetchChatHistory(id);
     };
 
-
+    const RemoveChatHistory = (id) => {
+        const fetchChatHistory = async (id) => {
+            const response = await fetch(`http://localhost:8443/c/sessions/remove/?token=${token.token}`, {
+                method: 'POST',
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ id: id }),
+                credentials: 'include',
+            });
+            try {
+                if (response.ok) {
+                    const data = await response.json();
+                    conv.splice(conv.findIndex(chat => chat.id === id), 1);
+                    setConv([...conv]);
+                    if (currentSession === id) {
+                        setMessages([]);
+                        if (socket !== null) {
+                            socket.close();
+                        }
+                        console.log(data, id);
+                    }
+                }
+            } catch (error) {
+                console.log(error);
+            }
+        };
+        fetchChatHistory(id);
+    };
     return (
         <div className="flex-1 overflow-y-auto p-4">
             <div className="mb-4 flex items-center justify-between">
                 <button
-                    onClick={AddChatHistory} // Handle click here
+                    onClick={() => AddChatHistory(setMessages, history)} // Handle click here
                     className="text-sm px-16 py-2 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
                 >
                     New Chat
@@ -107,15 +140,21 @@ const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
                 {
                     conv.map((chat) => (
                         <div
+
                             key={chat.id}
-                            className="bg-slate-800 p-3 rounded-lg cursor-pointer transition-all duration-300 group hover:bg-gradient-to-r hover:from-[#FF4B2B]/10 hover:to-[#FF416C]/10 border border-transparent hover:border-[#FF416C]/20"
-                            onClick={(e) => { e.preventDefault(); RenderChatHistory(chat.id) }}
+                            className="bg-slate-800 p-3 rounded-lg cursor-pointer transition-all duration-300 group hover:bg-gradient-to-r hover:from-[#FF4B2B]/10 hover:to-[#FF416C]/10 border border-transparent hover:border-[#FF416C]/20 relative"
+                            onClick={(e) => { e.preventDefault(); RenderChatHistory(chat.id); }}
                         >
+                            <button onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation(); // Prevent event bubbling
+                                RemoveChatHistory(chat.id);
+                            }} className="absolute top-2 right-2 bg-slate-800 px-1 py-0.5 text-xs font-bold text-white rounded hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                x
+                            </button>
                             <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-3">
-                                    {/* <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-[#FF4B2B]/20 to-[#FF416C]/20 flex items-center justify-center">
-                                        <span className="text-sm">{chat.id}</span>
-                                    </div> */}
+
                                     <div>
                                         <h3 className="text-sm font-medium">{chat.name}</h3>
                                     </div>
@@ -130,7 +169,6 @@ const ChatList = ({ token, conv, setConv, messages, setMessages }) => {
 };
 
 const Sidebar = ({ token, conv, setConv, messages, setMessages }) => {
-    console.log('------------------->sidebar');
 
     const [isOpen, setIsOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
@@ -202,20 +240,20 @@ const Sidebar = ({ token, conv, setConv, messages, setMessages }) => {
 };
 
 
-async function callSocket(token, user_message, { conv, setConv }) {
+async function callSocket(token, user_message, history, { conv, setConv }) {
     return new Promise((resolve, reject) => {
         const socketUrl = `ws://127.0.0.1:8443/ws/chat/?token=${token.token}`;
         if (!socket || socket.readyState !== WebSocket.OPEN) {
             if (socket) {
                 socket.close(); // Close the previous socket if it's not open
             }
-            // Create a new socket if it doesn't exist or is not open
             socket = new WebSocket(socketUrl);
 
             socket.onopen = function () {
                 const message = {
                     type: "chat_message",
                     message: user_message,
+                    id: currentSession,
                 };
                 socket.send(JSON.stringify(message));
             };
@@ -224,6 +262,9 @@ async function callSocket(token, user_message, { conv, setConv }) {
                 try {
                     const data = JSON.parse(event.data);
                     console.log("Message from server: ", data.ai_response);
+                    if (!conv.find(chat => chat.id === data.id))
+                        setConv([...conv, { id: data.id, name: convTitle(user_message ? (user_message.length > 26 ? user_message.substring(0, 23) + "..." : user_message) : "No input",) }]);
+                        currentSession = data.id;
                     resolve(data.ai_response);
                 } catch (error) {
                     reject(error);
@@ -231,18 +272,20 @@ async function callSocket(token, user_message, { conv, setConv }) {
             };
 
             socket.onerror = function (error) {
+                // history.push('/home');
                 reject(error);
             };
 
             socket.onclose = function () {
+                // history.push('/home');
                 console.log("WebSocket connection closed.");
-                AddChatHistory({ conv, setConv });
             };
         } else {
             // If socket is open, send message
             const message = {
                 type: "chat_message",
                 message: user_message,
+                id: currentSession,
             };
             socket.send(JSON.stringify(message));
         }
@@ -252,19 +295,23 @@ async function callSocket(token, user_message, { conv, setConv }) {
             try {
                 const data = JSON.parse(event.data);
                 console.log("Message from server: ", data.ai_response);
-                resolve(data.ai_response); // Resolve with the response from server
+                if (!conv.find(chat => chat.id === data.id))
+                    setConv([...conv, { id: data.id, name: convTitle(user_message ? (user_message.length > 26 ? user_message.substring(0, 23) + "..." : user_message) : "No input",) }]);
+                    currentSession = data.id;
+                resolve(data.ai_response);
             } catch (error) {
                 reject(error);
             }
         };
 
         socket.onerror = function (error) {
+            // history.push('/home');
             reject(error);
         };
 
         socket.onclose = function () {
+            // history.push('/home');
             console.log("WebSocket connection closed.");
-            AddChatHistory({ conv, setConv });
         };
     });
 }
@@ -272,7 +319,7 @@ async function callSocket(token, user_message, { conv, setConv }) {
 function ChatBar({ token, conv, setConv, messages, setMessages }) {
     const [isTyping, setIsTyping] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
-
+    const history = useHistory();
     const handleSendMessage = async (content, files) => {
         // Add user message
         const userMessage = {
@@ -289,7 +336,7 @@ function ChatBar({ token, conv, setConv, messages, setMessages }) {
         const aiResponse = async () => {
             const aiMessage = {
                 id: (Date.now() + 1).toString(),
-                content: await callSocket(token, userMessage.content, { conv, setConv }),
+                content: await callSocket(token, userMessage.content, history, { conv, setConv }),
                 timestamp: new Date(),
                 isAI: true,
             };

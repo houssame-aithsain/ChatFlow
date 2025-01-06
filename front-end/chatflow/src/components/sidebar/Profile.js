@@ -5,7 +5,6 @@ import { useAuth, useUser } from '../../auth/AuthProvider';
 
 const Profile = () => {
   const user = useUser();
-  console.log('User:', user);
   const { logout } = useAuth();
   const history = useHistory();
   const [showLogout, setShowLogout] = useState(false);

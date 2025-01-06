@@ -10,7 +10,7 @@ RUN pip install -r requirements.txt
 
 RUN pip install -q -U google-generativeai
 
-RUN python manage.py collectstatic
+RUN pip install whitenoise
 
 RUN pip install groq
 
