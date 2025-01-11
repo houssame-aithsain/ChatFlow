@@ -1,6 +1,22 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from django import forms
+from django.core.exceptions import ValidationError
+import re
+
+class UppercaseValidator:
+    def __init__(self, min_length=8):
+        self.min_length = min_length
+
+    def validate(self, password, user=None):
+        if len(password) < self.min_length:
+            raise ValidationError("Password must be at least 8 characters long.")
+        if not re.search(r'[A-Z]', password):
+            raise ValidationError("Password must contain at least one uppercase letter.")
+
+    def get_help_text(self):
+        return f"Your password must contain at least one uppercase letter."
+
 
 class CustomUserManager(BaseUserManager):
 
@@ -13,11 +29,22 @@ class CustomUserManager(BaseUserManager):
             
         forms.EmailField().clean(email)
 
-    def create_user(self, username, email, first_name, last_name, password=None, **extra_fields):
+    def check_username(self, username):
+        """
+        Check if the username is already in use.
+        """
+        if self.filter(username=username).exists():
+            raise forms.ValidationError("Username is already in use")
+            
+        forms.CharField().clean(username)
+
+    def create_user(self, username, email, first_name, last_name, password, **extra_fields):
         """
         Create and return a regular user with an email and password.
         """
         self.check_email(email)
+        self.check_username(username)
+        UppercaseValidator().validate(password)
         email = self.normalize_email(email)
         user = self.model(username=username, email=email, first_name=first_name, last_name=last_name, **extra_fields)
         user.set_password(password)

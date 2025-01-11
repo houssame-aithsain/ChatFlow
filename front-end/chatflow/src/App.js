@@ -5,6 +5,8 @@ import React, { useState, useEffect } from 'react';
 import Home from './Home/Home';
 import { AuthProvider, useAuth } from './auth/AuthProvider';
 
+
+
 function App() {
   const { token } = useAuth();
 
@@ -18,7 +20,7 @@ function App() {
             </Route>
             {
               token ?
-                <Route path={['/home', '/']}>
+              <Route path={['/home', '/']}>
                   <Home />
                 </Route> : <Redirect to="/login" />
             }

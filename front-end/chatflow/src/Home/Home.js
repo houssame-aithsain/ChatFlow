@@ -1,13 +1,12 @@
 import { ChatContainer } from '../chat/ChatContainer'
 import { MessageInput } from '../chat/MessageInput';
 import { AuthProvider, useAuth } from '../auth/AuthProvider';
-import React, { useEffect, useState } from 'react';
+import React, { use, useEffect, useState } from 'react';
 import ModelSwitcher from '../components/sidebar/ModelSwitcher';
 import Profile from '../components/sidebar/Profile';
 import { useHistory } from 'react-router-dom/cjs/react-router-dom.min';
 
 var socket = null;
-var currentSession = -1
 
 export function convTitle(message) {
     if (message && message.length > 0) {
@@ -17,12 +16,12 @@ export function convTitle(message) {
     return convTitle.staticVariable;
 }
 
-export const AddChatHistory = (setMessages, history, setChatHistoryBC) => {
+export const AddChatHistory = (setMessages, history, setChatHistoryBC, setCurrentSession) => {
     if (socket !== null) {
         socket.close();
         console.log("------->Socket closed<-------");
     }
-    currentSession = -1;
+    setCurrentSession(-1);
     setMessages([]);
     setChatHistoryBC(null);
     history.push('/home');
@@ -50,7 +49,7 @@ export const getUserCchatHistory = async (token, id) => {
     };
 };
 
-const ChatList = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHistoryBC }) => {
+const ChatList = ({ token, conv, setConv, messages, setMessages, chatHistoryBC, setChatHistoryBC, setCurrentSession, currentSession }) => {
     const history = useHistory();
 
     useEffect(() => {
@@ -73,11 +72,15 @@ const ChatList = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHis
     }, [token, setConv]);
 
     const RenderChatHistory = (id) => {
-        currentSession = id;
+        setCurrentSession(id);
         const fetchChatHistory = async (id) => {
             setMessages([]);
             const chats = await getUserCchatHistory(token, id);
             const newMessages = [];
+            if (chats.messages.length <= 0) {
+                console.log("No messages found");
+                setCurrentSession(-1);
+            }
             chats.messages.forEach((message) => {
                 // User message
                 newMessages.push({
@@ -120,7 +123,7 @@ const ChatList = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHis
                         if (socket !== null) {
                             socket.close();
                         }
-                        currentSession = -1;
+                        setCurrentSession(-1);
                         console.log(data, id);
                     }
                 }
@@ -130,11 +133,16 @@ const ChatList = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHis
         };
         fetchChatHistory(id);
     };
+    useEffect(() => {
+        if (currentSession !== -1) {
+            RenderChatHistory(currentSession);
+        }
+    }, [currentSession]);
     return (
         <div className="flex-1 overflow-y-auto p-4">
             <div className="mb-4 flex items-center justify-between">
                 <button
-                    onClick={() => AddChatHistory(setMessages, history, setChatHistoryBC)} // Handle click here
+                    onClick={() => AddChatHistory(setMessages, history, setChatHistoryBC, setCurrentSession)} // Handle click here
                     className="text-sm px-16 py-2 rounded-md bg-gradient-to-r from-[#FF4B2B] to-[#FF416C] hover:opacity-90 transition-opacity"
                 >
                     New Chat
@@ -144,10 +152,9 @@ const ChatList = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHis
                 {
                     conv.map((chat) => (
                         <div
-
                             key={chat.id}
                             className={`p-3 rounded-lg cursor-pointer transition-all duration-300 relative ${chatHistoryBC === chat.id ? "bg-gray-600 p-2 rounded-md cursor-pointer group" : "bg-gray-800 p-2 rounded-md cursor-pointer group"}`}
-                            onClick={(e) => { e.preventDefault(); RenderChatHistory(chat.id); setChatHistoryBC(chat.id); }}
+                            onClick={(e) => { e.preventDefault(); setCurrentSession(chat.id); setChatHistoryBC(chat.id); }}
                         >
                             <button onClick={(e) => {
                                 e.preventDefault();
@@ -168,11 +175,11 @@ const ChatList = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHis
                     ))
                 }
             </div>
-        </div>
+        </div >
     );
 };
 
-const Sidebar = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHistoryBC }) => {
+const Sidebar = ({ token, conv, setConv, messages, setMessages, chatHistoryBC, setChatHistoryBC, setCurrentSession, currentSession }) => {
 
     const [isOpen, setIsOpen] = useState(true);
     const [isMobile, setIsMobile] = useState(false);
@@ -235,8 +242,8 @@ const Sidebar = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHist
                     </div>
                 </div>
 
-                <ModelSwitcher token={token} socket={socket} setMessages={setMessages} history={history}/>
-                <ChatList conv={conv} setConv={setConv} token={token} setMessages={setMessages} chatHistoryBC={chatHistoryBC} setChatHistoryBC={setChatHistoryBC}/>
+                <ModelSwitcher token={token} socket={socket} setMessages={setMessages} history={history} />
+                <ChatList conv={conv} setConv={setConv} token={token} messages={messages} setMessages={setMessages} chatHistoryBC={chatHistoryBC} setChatHistoryBC={setChatHistoryBC} setCurrentSession={setCurrentSession} currentSession={currentSession} />
                 <Profile />
             </div>
         </>
@@ -244,7 +251,7 @@ const Sidebar = ({ token, conv, setConv, setMessages, chatHistoryBC, setChatHist
 };
 
 
-async function callSocket(token, user_message, { conv, setConv }, setChatHistoryBC) {
+async function callSocket(token, user_message, { conv, setConv }, setChatHistoryBC, currentSession, setCurrentSession) {
     return new Promise((resolve, reject) => {
         const socketUrl = `ws://127.0.0.1:8443/ws/chat/?token=${token.token}`;
         if (!socket || socket.readyState !== WebSocket.OPEN) {
@@ -268,7 +275,7 @@ async function callSocket(token, user_message, { conv, setConv }, setChatHistory
                     console.log("Message from server: ", data.ai_response);
                     if (!conv.find(chat => chat.id === data.id))
                         setConv([{ id: data.id, name: convTitle(user_message ? (user_message.length > 26 ? user_message.substring(0, 23) + "..." : user_message) : "No input",) }, ...conv]);
-                        currentSession = data.id;
+                    setCurrentSession(data.id);
                     setChatHistoryBC(data.id);
                     resolve(data.ai_response);
                 } catch (error) {
@@ -302,7 +309,7 @@ async function callSocket(token, user_message, { conv, setConv }, setChatHistory
                 console.log("Message from server: ", data.ai_response);
                 if (!conv.find(chat => chat.id === data.id))
                     setConv([{ id: data.id, name: convTitle(user_message ? (user_message.length > 26 ? user_message.substring(0, 23) + "..." : user_message) : "No input",) }, ...conv]);
-                    currentSession = data.id;
+                setCurrentSession(data.id);
                 setChatHistoryBC(data.id);
                 resolve(data.ai_response);
             } catch (error) {
@@ -345,12 +352,12 @@ function TypingAnimation({ text }) {
         return () => clearInterval(interval);
     }, [text]);
 
-    console.log("Current displayed text: ", displayedText); // Clearer log message
+    // console.log("Current displayed text: ", displayedText); // Clearer log message
     return <h1 className="text-3xl bg-slate-400"><strong>{displayedText}</strong></h1>;
 }
 
 
-function ChatBar({ token, conv, setConv, messages, setMessages, setChatHistoryBC}) {
+function ChatBar({ token, conv, setConv, messages, setMessages, setChatHistoryBC, currentSession, setCurrentSession }) {
     const [isTyping, setIsTyping] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const handleSendMessage = async (content, files) => {
@@ -369,7 +376,7 @@ function ChatBar({ token, conv, setConv, messages, setMessages, setChatHistoryBC
         const aiResponse = async () => {
             const aiMessage = {
                 id: (Date.now() + 1).toString(),
-                content: await callSocket(token, userMessage.content, { conv, setConv }, setChatHistoryBC),
+                content: await callSocket(token, userMessage.content, { conv, setConv }, setChatHistoryBC, currentSession, setCurrentSession),
                 timestamp: new Date(),
                 isAI: true,
             };
@@ -396,7 +403,7 @@ function ChatBar({ token, conv, setConv, messages, setMessages, setChatHistoryBC
                     <div className="flex-1 overflow-hidden overflow-y-auto">
                         <ChatContainer messages={messages} isTyping={isTyping} setMessages={setMessages} />
                     </div>
-                    {currentSession === -1 ? (<TypingAnimation text={'What can I help with?'}/>) : ""}
+                    {currentSession === -1 ? (<TypingAnimation text={'What can I help with?'} />) : ""}
                     <div className="mt-auto h-24">
                         <MessageInput onSendMessage={handleSendMessage} isLoading={isTyping} />
                     </div>
@@ -407,15 +414,49 @@ function ChatBar({ token, conv, setConv, messages, setMessages, setChatHistoryBC
 }
 
 function Home() {
-    const [chatHistoryBC, setChatHistoryBC] = useState(null);
-    const [messages, setMessages] = useState([]); // tomorrows i need to start from here
+    const [currentSession, setCurrentSession] = useState(
+        parseInt(localStorage.getItem("CURRENT_SESSION"), 10) || -1
+    );
+    const [chatHistoryBC, setChatHistoryBC] = useState(
+        parseInt(localStorage.getItem("CHAT_HISTORY_BC"), 10) || null
+    );
+    const [messages, setMessages] = useState([]);
+
+    useEffect(() => {
+        localStorage.setItem("CURRENT_SESSION", currentSession);
+        localStorage.setItem("CHAT_HISTORY_BC", chatHistoryBC);
+    }, [currentSession, chatHistoryBC]);
+
     const [conv, setConv] = useState([]);
     const token = useAuth();
-
     return (
         <>
-            <Sidebar conv={conv} setConv={setConv} token={token} setMessages={setMessages} chatHistoryBC={chatHistoryBC} setChatHistoryBC={setChatHistoryBC} />
-            <ChatBar conv={conv} setConv={setConv} token={token} messages={messages} setMessages={setMessages} setChatHistoryBC={setChatHistoryBC} />
+            {/* {showNotification && (
+                <NotificationSystem
+                    message="Welcome to ChatFlow!"
+                    type="info"
+                />
+            )} */}
+            <Sidebar
+                conv={conv}
+                setConv={setConv}
+                token={token}
+                setMessages={setMessages}
+                chatHistoryBC={chatHistoryBC}
+                setChatHistoryBC={setChatHistoryBC}
+                setCurrentSession={setCurrentSession}
+                currentSession={currentSession}
+            />
+            <ChatBar
+                conv={conv}
+                setConv={setConv}
+                token={token}
+                messages={messages}
+                setMessages={setMessages}
+                setChatHistoryBC={setChatHistoryBC}
+                setCurrentSession={setCurrentSession}
+                currentSession={currentSession}
+            />
         </>
     );
 }

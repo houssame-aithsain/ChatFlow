@@ -1,4 +1,6 @@
-async function Register(email, password, first_name, last_name, username, setIsRightPanelActive) {
+import { NotificationSystem } from "../../Home/NotificationSystem";
+
+async function Register(email, password, first_name, last_name, username, setIsRightPanelActive, setNotifications) {
     const credentails = {email, password, first_name, last_name, username};
     console.log(credentails);
 
@@ -16,10 +18,12 @@ async function Register(email, password, first_name, last_name, username, setIsR
     if (response.ok) {
         const data = await response.json();
         console.log('registeration successful:', data);
+        NotificationSystem("Registration successful!", "success", setNotifications);
         setIsRightPanelActive(false);
       } else {
         const errorData = await response.json();
         console.error('registeration failed:', errorData);
+        NotificationSystem(errorData.error, "error", setNotifications);
     }
 }
 
