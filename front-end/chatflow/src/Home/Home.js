@@ -77,28 +77,31 @@ const ChatList = ({ token, conv, setConv, messages, setMessages, chatHistoryBC, 
             setMessages([]);
             const chats = await getUserCchatHistory(token, id);
             const newMessages = [];
-            if (chats.messages.length <= 0) {
+            console.log(chats);
+            if (chats.error || chats.messages.length <= 0) {
                 console.log("No messages found");
                 setCurrentSession(-1);
             }
-            chats.messages.forEach((message) => {
-                // User message
-                newMessages.push({
-                    id: message.id,
-                    content: message.user_message,
-                    timestamp: new Date(message.timestamp),
-                    isAI: false,
-                });
+            if (!chats.error) {
+                chats.messages.forEach((message) => {
+                    // User message
+                    newMessages.push({
+                        id: message.id,
+                        content: message.user_message,
+                        timestamp: new Date(message.timestamp),
+                        isAI: false,
+                    });
 
-                // AI response
-                newMessages.push({
-                    id: `${message.id}-ai`, // Ensure unique ID for AI message
-                    content: message.ai_response,
-                    timestamp: new Date(message.timestamp),
-                    isAI: true,
+                    // AI response
+                    newMessages.push({
+                        id: `${message.id}-ai`, // Ensure unique ID for AI message
+                        content: message.ai_response,
+                        timestamp: new Date(message.timestamp),
+                        isAI: true,
+                    });
                 });
-            });
-            setMessages((prev) => [...prev, ...newMessages]);
+                setMessages((prev) => [...prev, ...newMessages]);
+            }
         }
         fetchChatHistory(id);
     };

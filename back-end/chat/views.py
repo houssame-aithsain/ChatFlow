@@ -44,7 +44,10 @@ class SessionsManager(viewsets.ModelViewSet):
                 try:
                     session_id = request.data.get("id")
                     session = ChatSession.objects.get(id=session_id)
+                    if session.user != user:
+                        return Response({"error": "Session does not belong to user"}, status=status.HTTP_400_BAD_REQUEST)
                     serialized_session = ChatSessionSerializer(session)
+                    print(f"----------------------{serialized_session.data}", flush=True)
                     return Response(serialized_session.data, status=status.HTTP_200_OK)
                 except Exception as e:
                     return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
