@@ -23,7 +23,7 @@ async function Register(email, password, first_name, last_name, username, setIsR
       } else {
         const errorData = await response.json();
         console.error('registeration failed:', errorData);
-        NotificationSystem(errorData.error, "error", setNotifications);
+        NotificationSystem(errorData.error.replace(/[\[\]']+/g, '').trim(), "error", setNotifications);
     }
 }
 
