@@ -6,7 +6,7 @@ A demonstration platform showcasing the capabilities of AI chat technology with 
 
 ### Core Features
 - User-Friendly Interface: Intuitive design for easy navigation and interaction.
-- Private chat interfaces for each user
+- Private Chat Experience: Each user engages in a secure and personal chat environment.
 - Flexible payment distribution
 - AI integration for chat responses
 
