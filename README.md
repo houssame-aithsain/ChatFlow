@@ -25,13 +25,6 @@ A demonstration platform showcasing the capabilities of AI chat technology with 
 - Basic authentication system
 - Initial UI layout
 
-### 2. Subscription & Group Management
-- Subscription plans implementation
-- Group creation and management
-- Invitation system
-- Payment distribution
-- Member management
-
 ### 3. Chat Interface & AI Integration
 - Private chat interface
 - Chat history management
