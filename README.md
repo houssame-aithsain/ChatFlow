@@ -5,7 +5,7 @@ A demonstration platform showcasing the capabilities of AI chat technology with 
 ## Project Overview
 
 ### Core Features
-- Shared subscription plans for groups (2, 3, or 5 users)
+- User-Friendly Interface: Intuitive design for easy navigation and interaction.
 - Private chat interfaces for each user
 - Flexible payment distribution
 - AI integration for chat responses
