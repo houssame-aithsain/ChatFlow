@@ -8,7 +8,7 @@ A demonstration platform showcasing the capabilities of AI chat technology with 
 - User-Friendly Interface: Intuitive design for easy navigation and interaction.
 - Private Chat Experience: Each user engages in a secure and personal chat environment.
 - AI Integration: Advanced AI algorithms provide intelligent and relevant responses to user queries.
-- AI integration for chat responses
+- Customizable Chatbots: Options to tailor chatbot behavior and personality to suit different needs.
 
 ### Technical Stack
 - Backend: Django REST Framework
