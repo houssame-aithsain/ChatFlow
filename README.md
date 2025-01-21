@@ -1,14 +1,14 @@
 # Group AI Chat Platform
 
-A platform enabling users to share AI chat subscription costs while maintaining private chat interfaces.
+A demonstration platform showcasing the capabilities of AI chat technology with a focus on user interaction.
 
 ## Project Overview
 
 ### Core Features
-- Shared subscription plans for groups (2, 3, or 5 users)
-- Private chat interfaces for each user
-- Flexible payment distribution
-- AI integration for chat responses
+- User-Friendly Interface: Intuitive design for easy navigation and interaction.
+- Private Chat Experience: Each user engages in a secure and personal chat environment.
+- AI Integration: Advanced AI algorithms provide intelligent and relevant responses to user queries.
+- Customizable Chatbots: Options to tailor chatbot behavior and personality to suit different needs.
 
 ### Technical Stack
 - Backend: Django REST Framework
@@ -25,28 +25,19 @@ A platform enabling users to share AI chat subscription costs while maintaining 
 - Basic authentication system
 - Initial UI layout
 
-### 2. Subscription & Group Management
-- Subscription plans implementation
-- Group creation and management
-- Invitation system
-- Payment distribution
-- Member management
-
-### 3. Chat Interface & AI Integration
+### 2. Chat Interface & AI Integration
 - Private chat interface
 - Chat history management
 - AI API integration
 - Message handling system
 - Real-time updates
 
-### 4. Advanced Features & Optimization
-- Payment processing
-- Usage tracking
+### 3. Advanced Features & Optimization
 - Error handling
 - Performance optimization
 - Security implementation
 
-### 5. Testing & Deployment
+### 4. Testing & Deployment
 - Unit testing
 - Integration testing
 - Deployment preparation
