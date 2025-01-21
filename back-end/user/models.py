@@ -61,11 +61,11 @@ class CustomUserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     id = models.AutoField(primary_key=True)
-    username = models.CharField(max_length=50, unique=True, null=False)
+    username = models.CharField(max_length=254, unique=True, null=False)
     email = models.EmailField(max_length=254, unique=True, null=False)
-    first_name = models.CharField(max_length=50, null=False)
-    last_name = models.CharField(max_length=50, null=False)
-    password = models.CharField(max_length=50, null=False)
+    first_name = models.CharField(max_length=254, null=False)
+    last_name = models.CharField(max_length=254, null=False)
+    password = models.CharField(max_length=254, null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_authenticated = models.BooleanField(default=False)

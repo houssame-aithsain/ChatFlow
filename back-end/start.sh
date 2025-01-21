@@ -1,5 +1,4 @@
 #!/bin/bash
 
-echo "yes" | python manage.py flush
-python manage.py makemigrations
+python manage.py makemigrations user chat
 python manage.py migrate

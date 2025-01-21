@@ -1,16 +1,11 @@
-import jwt
 import json
+import os
 from django.shortcuts import get_object_or_404
 from channels.generic.websocket import WebsocketConsumer
-from asgiref.sync import async_to_sync
 from .models import Message, ChatSession
-from datetime import datetime
 from user.models import User
 from urllib.parse import parse_qs
-import google.generativeai as genai
 from groq import Groq
-
-#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
 
 class ChatConsumer(WebsocketConsumer):
     Gmessages = {"users": []}
@@ -121,9 +116,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def get_ai_response(self, user_message):
         client = Groq(
-
-            api_key="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"
-
+            api_key=os.getenv("API_KEY"),
         )
         user_section = next(
             (u for u in self.Gmessages["users"] if u["session_id"] == self.ChatSession.id), None

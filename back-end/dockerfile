@@ -4,17 +4,15 @@ WORKDIR /back-end
 
 COPY . .
 
-RUN apt-get update -y && apt-get upgrade -y && chmod +x ./start.sh
+RUN apt-get update -y  && chmod +x ./start.sh
 
 RUN pip install -r requirements.txt
-
-RUN pip install -q -U google-generativeai
 
 RUN pip install whitenoise
 
 RUN pip install groq
 
-RUN ./start.sh
+# RUN ./start.sh
 
 # ENV PYTHONUNBUFFERED=1
 
