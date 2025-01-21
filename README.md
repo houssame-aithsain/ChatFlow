@@ -1,6 +1,6 @@
 # Group AI Chat Platform
 
-A platform enabling users to share AI chat subscription costs while maintaining private chat interfaces.
+A demonstration platform showcasing the capabilities of AI chat technology with a focus on user interaction.
 
 ## Project Overview
 
